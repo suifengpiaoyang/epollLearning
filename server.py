@@ -22,23 +22,27 @@ collections = {}
 
 print('Waiting for connect...')
 
-while True:
-    events = epoll.poll()
+try:
+    while True:
+        events = epoll.poll()
 
-    for fileno,event in events:
-        if fileno == server.fileno():
-            client,addr = server.accept()
-            client.setblocking(0)
-            # level-triggered mode
-            epoll.register(client.fileno(),select.EPOLLIN)
-            collections[client.fileno()] = client
-        else:
-            client = collections[fileno]
-            data = client.recv(1024)
-            print('Recved data({}) from {}'.format(data.decode(),client.getpeername()))
-            client.sendall(data)
-            print('Sending data({}) to {}'.format(data.decode(),client.getpeername()))
-            epoll.unregister(fileno)
-            client.close()
-            del collections[fileno]
-
+        for fileno,event in events:
+            if fileno == server.fileno():
+                client,addr = server.accept()
+                client.setblocking(0)
+                # level-triggered mode
+                epoll.register(client.fileno(),select.EPOLLIN)
+                collections[client.fileno()] = client
+            else:
+                client = collections[fileno]
+                data = client.recv(1024)
+                print('Recved data({}) from {}'.format(data.decode(),client.getpeername()))
+                client.sendall(data)
+                print('Sending data({}) to {}'.format(data.decode(),client.getpeername()))
+                epoll.unregister(fileno)
+                client.close()
+                del collections[fileno]
+finally:
+    epoll.unregister(server)
+    epoll.close()
+    server.close()
