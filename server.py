@@ -42,6 +42,8 @@ try:
                 epoll.unregister(fileno)
                 client.close()
                 del collections[fileno]
+except KeyboardInterrupt:
+    pass
 finally:
     epoll.unregister(server)
     epoll.close()
