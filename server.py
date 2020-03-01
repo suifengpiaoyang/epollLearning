@@ -16,8 +16,8 @@ server.listen(5)
 server.setblocking(0)
 
 epoll = select.epoll()
-# level-triggered mode
-epoll.register(server.fileno(),select.EPOLLIN)
+# edge-triggered mode
+epoll.register(server.fileno(),select.EPOLLIN|select.EPOLLET)
 collections = {}
 
 print('Waiting for connect...')
@@ -30,8 +30,8 @@ try:
             if fileno == server.fileno():
                 client,addr = server.accept()
                 client.setblocking(0)
-                # level-triggered mode
-                epoll.register(client.fileno(),select.EPOLLIN)
+                # edge-triggered mode
+                epoll.register(client.fileno(),select.EPOLLIN|select.EPOLLET)
                 collections[client.fileno()] = client
             else:
                 client = collections[fileno]
